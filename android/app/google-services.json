@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "299526309095",
+    "firebase_url": "https://voca-assist-cloud-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "voca-assist-cloud",
+    "storage_bucket": "voca-assist-cloud.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299526309095:android:60b6c83b6618703e66ce42",
+        "android_client_info": {
+          "package_name": "com.example.voca_assist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299526309095-udmktk8ao4etri3hq159b3o7l02hmgep.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCX2u7pQXQAEc30caxUVXTJIDnnSwDcQo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299526309095-udmktk8ao4etri3hq159b3o7l02hmgep.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "299526309095-m6083pokvuilres85ofohqd9plpqgtue.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.vocaAssist"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
