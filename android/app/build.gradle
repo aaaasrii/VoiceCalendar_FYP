@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.voca_assist"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -23,13 +23,10 @@ android {
         applicationId = "com.example.voca_assist"
         
         // FIXED: In Kotlin DSL (.kts), the name is 'minSdk', not 'minSdkVersion'
-        minSdkVersion = flutter.minSdkVersion 
-        
-        targetSdk = flutter.targetSdkVersion
-        
-        versionCode = flutter.versionCode?.toInt() ?: 1
-        versionName = flutter.versionName ?: "1.0"
-
+        minSdkVersion = flutter.minSdkVersion        
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
         multiDexEnabled = true 
     }
 
