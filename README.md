@@ -44,6 +44,5 @@ Due to Swift Package Manager (SPM) dependency constraints, ensure you run the po
 4. **Run the Application:**
 You must pass the Gemini API Key during runtime using Dart defines:
 ```bash
-   git clone <repository_url>
-   cd VoiceCalendar_FYP
+    flutter run --dart-define=GEMINI_API_KEY=your_api_key_here
 ```
