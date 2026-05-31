@@ -47,7 +47,7 @@ You must pass the Gemini API Key during runtime using Dart defines:
     flutter run --dart-define=GEMINI_API_KEY=your_api_key_here
 ```
 
-🔒 iOS Privacy & Permissions
+## 🔒 iOS Privacy & Permissions
 This application requires explicit user permissions to function correctly. The `ios/Runner/Info.plist` has been configured with the following usage descriptions to comply with Apple's strict privacy policies:
 
 *   `NSMicrophoneUsageDescription`: Required to record voice commands.
