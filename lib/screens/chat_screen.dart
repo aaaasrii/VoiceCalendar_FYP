@@ -1,9 +1,12 @@
+import 'dart:convert';
+
+import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:voca_assist/globals.dart' as globals;
 import 'package:voca_assist/services/ai_service.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -98,108 +101,59 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // --- SEND MESSAGE & AI LOGIC ---
+  // --- SEND MESSAGE: STT/text -> Gemini NLP parser (console verification only) ---
   Future<void> _sendMessage() async {
     final userText = _textController.text.trim();
     if (userText.isEmpty) return;
 
     try {
-      debugPrint('DEBUG LOG: Parsing appointment from STT/text input: $userText');
+      debugPrint('STT/input -> parseAppointment: $userText');
       final structuredJson = await _aiService.parseAppointment(userText);
-      debugPrint('DEBUG LOG: parseAppointment JSON -> $structuredJson');
-    } catch (e) {
-      debugPrint('ERROR: parseAppointment failed: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Appointment parsing failed: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-      return;
-    }
+      debugPrint('parseAppointment JSON: $structuredJson');
 
-    debugPrint("DEBUG LOG: Send button pressed! Text: $userText");
+      try {
+        final parsed = jsonDecode(structuredJson) as Map<String, dynamic>;
+        if (parsed['action'] == 'create') {
+          final title = parsed['title'] as String;
+          final dateStr = parsed['date'] as String;
+          final timeStr = parsed['time'] as String;
 
-    setState(() {
-      _messages.add({"role": "user", "text": userText});
-      _textController.clear();
-      _isTyping = true;
-    });
+          final dateParts = dateStr.split('-');
+          final timeParts = timeStr.split(':');
+          final start = DateTime(
+            int.parse(dateParts[0]),
+            int.parse(dateParts[1]),
+            int.parse(dateParts[2]),
+            int.parse(timeParts[0]),
+            int.parse(timeParts[1]),
+          );
+          final end = start.add(const Duration(hours: 1));
 
-    _scrollToBottom();
+          final event = Event(
+            title: title,
+            startDate: start,
+            endDate: end,
+          );
 
-    try {
-      debugPrint("DEBUG LOG: Attempting to reach Gemini API...");
-
-      // Use the persistent _chat session initialized in initState
-      final response = await _chat.sendMessage(Content.text(userText));
-
-      debugPrint("DEBUG LOG: Gemini replied successfully!");
-
-      final functionCalls = response.functionCalls.toList();
-
-      if (functionCalls.isNotEmpty) {
-        for (final call in functionCalls) {
-          if (call.name == 'createAppointment') {
-            final title = call.args['title'] as String;
-            final dateStr = call.args['date'] as String;
-
-            debugPrint("DEBUG LOG: Saving to Firestore -> $title on $dateStr");
-
-            // Save to Firestore
-            await FirebaseFirestore.instance.collection('events').add({
-              'title': title,
-              'date': DateTime.parse(dateStr),
-              'user': globals.loggedInUsername,
-              'created_at': FieldValue.serverTimestamp(),
-            });
-
-            setState(() {
-              _isTyping = false;
-              _messages.add({
-                "role": "ai",
-                "text": "✅ Success! I've scheduled '$title' for $dateStr.",
-              });
-            });
+          if (!kIsWeb) {
+            final added = await Add2Calendar.addEvent2Cal(event);
+            debugPrint('Calendar event added ($added): $title at $start');
+          } else {
+            debugPrint(
+              'Web environment detected: Native Calendar trigger bypassed. Event created successfully in memory.',
+            );
           }
         }
-      } else {
-        setState(() {
-          _isTyping = false;
-          _messages.add({
-            "role": "ai",
-            "text": response.text ?? "I'm not sure how to help with that.",
-          });
-        });
-      }
-    } catch (e) {
-      debugPrint("CRITICAL ERROR: $e");
-
-      // This will pop up a red error message on your phone screen!
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("AI Connection Error: $e"),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+      } catch (e, stackTrace) {
+        debugPrint('Calendar/json decode failed: $e');
+        debugPrint('$stackTrace');
       }
 
-      setState(() {
-        _isTyping = false;
-        _messages.add({
-          "role": "ai",
-          "text":
-              "Sorry, I couldn't connect. Please check your internet or API key.",
-        });
-      });
+      _textController.clear();
+    } catch (e, stackTrace) {
+      debugPrint('parseAppointment failed: $e');
+      debugPrint('$stackTrace');
     }
-
-    _scrollToBottom();
   }
 
   void _scrollToBottom() {

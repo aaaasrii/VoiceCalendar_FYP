@@ -12,27 +12,35 @@ class AIService {
       );
     }
     return GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       apiKey: geminiApiKey,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+      ),
     );
   }
 
   Future<String> parseAppointment(String userInput) async {
     final model = _buildModel();
+    final now = DateTime.now().toIso8601String();
 
     final prompt = '''
+System Context: Today's exact date and time is $now. You must calculate all relative dates (like 'tomorrow', 'next week') strictly based on this current date.
+
 You are a scheduling assistant. Extract appointment details from this user input:
 "$userInput"
 
-Return ONLY a raw JSON string with no markdown, no code fences, and no extra text.
-The JSON object must contain exactly these keys:
-{"title": "", "date": "YYYY-MM-DD", "time": "HH:MM", "action": "create"}
+OUTPUT FORMAT (mandatory):
+Return ONLY valid JSON matching this exact schema (replace placeholders with extracted values):
+{"title": "...", "date": "YYYY-MM-DD", "time": "HH:MM", "action": "create"}
+Do NOT wrap the response in Markdown code blocks (no ```json fences). No explanation or extra text.
+The JSON object MUST contain exactly these four keys and no others.
 
-Rules:
-- "title": short event name inferred from the input
-- "date": ISO date in YYYY-MM-DD format
-- "time": 24-hour time in HH:MM format; use "00:00" if no time is mentioned
-- "action": always the literal string "create"
+Field rules:
+- "title": short event name inferred from the input (string, never omit)
+- "date": calendar date as YYYY-MM-DD (string, never omit)
+- "time": 24-hour clock as HH:MM (string, never omit); use "00:00" if no time is mentioned
+- "action": must be the literal string "create" (never omit, never change)
 - If no year is mentioned, use ${DateTime.now().year}
 ''';
 

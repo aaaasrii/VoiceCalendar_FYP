@@ -34,15 +34,17 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // ADDED: Platform safe check. Windows won't crash now!
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-    await FirebaseAppCheck.instance.activate(
-      providerAndroid: AndroidDebugProvider(),
-    );
-    debugPrint("App Check activated for Android (Debug)");
-  } else {
-    // For Windows, Web, or iOS
-    await FirebaseAppCheck.instance.activate();
-    debugPrint("App Check skipped or default used for non-Android platform");
+  if (!kIsWeb) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: AndroidDebugProvider(),
+      );
+      debugPrint("App Check activated for Android (Debug)");
+    } else {
+      // For Windows, Web, or iOS
+      await FirebaseAppCheck.instance.activate();
+      debugPrint("App Check skipped or default used for non-Android platform");
+    }
   }
 
   runApp(const VocaAssist());
@@ -80,7 +82,7 @@ class _VocaAssistState extends State<VocaAssist> {
         useMaterial3: true,
       ),
       // We start directly on the speech test screen
-      initialRoute: '/speech',
+      initialRoute: '/chat',
       routes: {
         '/': (context) => const WelcomeScreen(),
         '/speech': (context) => SpeechToTextScreen(),
